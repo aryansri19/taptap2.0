@@ -41,7 +41,7 @@
       padding: 24px 20px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
     }
     .header { text-align: center; }
     .header h1 { font-size: 1.25rem; font-weight: 800; color: var(--text); line-height: 1.3; }
@@ -93,10 +93,22 @@
       font-size: 0.875rem;
       line-height: 1.55;
       color: #1e293b;
-      position: relative;
     }
     .review-card.active { display: block; }
+    .actions-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
     .btn-maps { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+    .btn-maps:active { transform: scale(0.98); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 12px;
+      font-size: 0.875rem;
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-secondary:active { background: #f1f5f9; }
     .loading-pulse {
       display: inline-block;
       width: 16px;
@@ -145,9 +157,14 @@
       <div id="reviewText"></div>
     </div>
 
-    <button id="btnCopyMaps" class="btn btn-maps" style="display: none;">
-      <span>📋 Copy & Open Google Maps</span>
-    </button>
+    <div id="actionArea" class="actions-group" style="display: none;">
+      <button id="btnCopyMaps" class="btn btn-maps">
+        <span>📋 Copy & Open Google Maps</span>
+      </button>
+      <button id="btnRegenerate" class="btn btn-secondary">
+        <span>🔄 Try Another Version</span>
+      </button>
+    </div>
   </div>
 
   <textarea id="clipboardFallback" style="position: absolute; left: -9999px;"></textarea>
@@ -160,13 +177,14 @@
     let generatedReviewText = "";
 
     const btnGenerate = document.getElementById('btnGenerate');
+    const actionArea = document.getElementById('actionArea');
     const btnCopyMaps = document.getElementById('btnCopyMaps');
+    const btnRegenerate = document.getElementById('btnRegenerate');
     const reviewCard = document.getElementById('reviewCard');
     const reviewTextEl = document.getElementById('reviewText');
     const fallbackBox = document.getElementById('clipboardFallback');
 
     function updateState() {
-      // Must select at least 1 service and 1 experience
       btnGenerate.disabled = !(selectedServices.size > 0 && selectedExperiences.size > 0);
     }
 
@@ -196,10 +214,10 @@
       updateState();
     });
 
-    // Generate Review Handler
-    btnGenerate.addEventListener('click', async () => {
-      btnGenerate.disabled = true;
-      btnGenerate.innerHTML = '<span class="loading-pulse"></span><span>Crafting review...</span>';
+    async function executeGeneration(btnTrigger) {
+      btnTrigger.disabled = true;
+      const originalText = btnTrigger.innerHTML;
+      btnTrigger.innerHTML = '<span class="loading-pulse"></span><span>Crafting review...</span>';
 
       try {
         const res = await fetch(CONFIG.workerUrl, {
@@ -232,17 +250,20 @@
         } catch (_) {}
 
         btnGenerate.style.display = 'none';
-        btnCopyMaps.style.display = 'flex';
+        actionArea.style.display = 'flex';
       } catch (err) {
-        alert(err.message || 'Service busy. Please tap Generate again.');
-        btnGenerate.disabled = false;
-        btnGenerate.innerHTML = '<span>✨ Generate Review</span>';
+        alert(err.message || 'Service busy. Please try again.');
+      } finally {
+        btnTrigger.disabled = false;
+        btnTrigger.innerHTML = originalText;
       }
-    });
+    }
+
+    btnGenerate.addEventListener('click', () => executeGeneration(btnGenerate));
+    btnRegenerate.addEventListener('click', () => executeGeneration(btnRegenerate));
 
     // Stage 2: Guaranteed User-Gesture Copy & Redirect
     btnCopyMaps.addEventListener('click', async () => {
-      // User gesture allows direct clipboard write
       let copied = false;
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
