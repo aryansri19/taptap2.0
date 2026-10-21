@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Share Your Feedback — Smile Sutra Dental Clinic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --chip-bg: #f1f5f9;
+      --chip-selected-bg: #ecfdf5;
+      --chip-selected-border: #10b981;
+      --chip-selected-text: #065f46;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px 12px 32px;
+    }
+    .container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--surface);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .header { text-align: center; }
+    .header h1 { font-size: 1.25rem; font-weight: 800; color: var(--text); line-height: 1.3; }
+    .header p { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
+    .section-title { font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 8px; }
+    .chips-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      background: var(--chip-bg);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 8px 14px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .chip.selected {
+      background: var(--chip-selected-bg);
+      border-color: var(--chip-selected-border);
+      color: var(--chip-selected-text);
+    }
+    .lang-chip { border-radius: 8px; padding: 6px 12px; font-size: 0.75rem; }
+    .lang-chip.selected { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+    .review-card {
+      display: none;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: #1e293b;
+      position: relative;
+    }
+    .review-card.active { display: block; }
+    .btn-maps { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+    .loading-pulse {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Smile Sutra Dental Clinic</h1>
+      <p>Tap your experience to generate a review</p>
+    </div>
+
+    <div>
+      <div class="section-title">Preferred Language</div>
+      <div class="chips-group" id="langGroup">
+        <div class="chip lang-chip selected" data-val="English">English</div><div class="chip lang-chip " data-val="Hindi">Hindi</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">Treatments / Services</div>
+      <div class="chips-group" id="serviceGroup">
+        <div class="chip" data-val="Root Canal">Root Canal</div><div class="chip" data-val="Teeth Whitening">Teeth Whitening</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">What Stood Out?</div>
+      <div class="chips-group" id="expGroup">
+        <div class="chip" data-val="Painless Procedure">Painless Procedure</div><div class="chip" data-val="Clean Clinic">Clean Clinic</div>
+      </div>
+    </div>
+
+    <button id="btnGenerate" class="btn btn-primary" disabled>
+      <span>✨ Generate Review</span>
+    </button>
+
+    <div id="reviewCard" class="review-card">
+      <div id="reviewText"></div>
+    </div>
+
+    <button id="btnCopyMaps" class="btn btn-maps" style="display: none;">
+      <span>📋 Copy & Open Google Maps</span>
+    </button>
+  </div>
+
+  <textarea id="clipboardFallback" style="position: absolute; left: -9999px;"></textarea>
+
+  <script>
+    const CONFIG = {"bizName":"Smile Sutra Dental Clinic","keyPerson":"","vertical":"Dental Clinic","locality":"Indiranagar","tone":"Warm & Authentic","mapsUrl":"https://maps.google.com","workerUrl":"https://taptap-edge-router.aryansrivastava19.workers.dev/","languages":["English","Hindi"],"serviceChips":["Root Canal","Teeth Whitening"],"experienceChips":["Painless Procedure","Clean Clinic"]};
+    let selectedLang = CONFIG.languages[0] || 'English';
+    const selectedServices = new Set();
+    const selectedExperiences = new Set();
+    let generatedReviewText = "";
+
+    const btnGenerate = document.getElementById('btnGenerate');
+    const btnCopyMaps = document.getElementById('btnCopyMaps');
+    const reviewCard = document.getElementById('reviewCard');
+    const reviewTextEl = document.getElementById('reviewText');
+    const fallbackBox = document.getElementById('clipboardFallback');
+
+    function updateState() {
+      // Must select at least 1 service and 1 experience
+      btnGenerate.disabled = !(selectedServices.size > 0 && selectedExperiences.size > 0);
+    }
+
+    document.getElementById('langGroup').addEventListener('click', (e) => {
+      const chip = e.target.closest('.lang-chip');
+      if (!chip) return;
+      document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedLang = chip.dataset.val;
+    });
+
+    document.getElementById('serviceGroup').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      chip.classList.toggle('selected');
+      const val = chip.dataset.val;
+      selectedServices.has(val) ? selectedServices.delete(val) : selectedServices.add(val);
+      updateState();
+    });
+
+    document.getElementById('expGroup').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      chip.classList.toggle('selected');
+      const val = chip.dataset.val;
+      selectedExperiences.has(val) ? selectedExperiences.delete(val) : selectedExperiences.add(val);
+      updateState();
+    });
+
+    // Generate Review Handler
+    btnGenerate.addEventListener('click', async () => {
+      btnGenerate.disabled = true;
+      btnGenerate.innerHTML = '<span class="loading-pulse"></span><span>Crafting review...</span>';
+
+      try {
+        const res = await fetch(CONFIG.workerUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bizName: CONFIG.bizName,
+            keyPerson: CONFIG.keyPerson,
+            vertical: CONFIG.vertical,
+            locality: CONFIG.locality,
+            tone: CONFIG.tone,
+            selectedServices: Array.from(selectedServices),
+            selectedExperiences: Array.from(selectedExperiences),
+            language: selectedLang
+          })
+        });
+
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error(data.message || 'Generation failed');
+
+        generatedReviewText = data.reviewText;
+        reviewTextEl.textContent = generatedReviewText;
+        reviewCard.classList.add('active');
+
+        // Stage 1: Optimistic Background Copy
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(generatedReviewText);
+          }
+        } catch (_) {}
+
+        btnGenerate.style.display = 'none';
+        btnCopyMaps.style.display = 'flex';
+      } catch (err) {
+        alert(err.message || 'Service busy. Please tap Generate again.');
+        btnGenerate.disabled = false;
+        btnGenerate.innerHTML = '<span>✨ Generate Review</span>';
+      }
+    });
+
+    // Stage 2: Guaranteed User-Gesture Copy & Redirect
+    btnCopyMaps.addEventListener('click', async () => {
+      // User gesture allows direct clipboard write
+      let copied = false;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(generatedReviewText);
+          copied = true;
+        }
+      } catch (_) {}
+
+      if (!copied) {
+        fallbackBox.value = generatedReviewText;
+        fallbackBox.select();
+        document.execCommand('copy');
+      }
+
+      window.open(CONFIG.mapsUrl, '_blank');
+    });
+  </script>
+</body>
+</html>
